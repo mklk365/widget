@@ -16,3 +16,8 @@ def mask_account_card(card_or_schet_number: str) -> str:
     elif len(digit_number) == 20:
         digit_for_mask = get_mask_account(digit_number)
     return f"{alpfa_number}{digit_for_mask}"
+
+
+def get_date(date_original: str) -> str:
+    date_ready = date_original[8:10] + "." + date_original[5:7] + "." + date_original[0:4]
+    return date_ready
