@@ -1,15 +1,13 @@
-
-
-def filter_by_state(list_dict, state='EXECUTED'):
-    '''Функция принимает список словарей и опционально значение для ключа'''
+def filter_by_state(list_dict, state="EXECUTED"):
+    """Функция принимает список словарей и опционально значение для ключа"""
     select_dict = []
     for i in list_dict:
-      if i['state'] == 'EXECUTED':
-        select_dict.append(i)
+        if i["state"] == "EXECUTED":
+            select_dict.append(i)
     return select_dict
 
 
 def sort_by_date(list_dict, reverse_date=True):
-    '''Функция принимает список словарей и необязательный параметр, задающий порядок сортировки'''
-  sorted_list = sorted(list_dict, key=lambda rec: rec["date"], reverse=reverse_date)
-  return sorted_list
+    """Функция принимает список словарей и необязательный параметр, задающий порядок сортировки"""
+    sorted_list = sorted(list_dict, key=lambda rec: rec["date"], reverse=reverse_date)
+    return sorted_list
