@@ -2,7 +2,7 @@ def filter_by_state(list_dict, state="EXECUTED") -> List[Dict[str, Any]]:
     """Функция принимает список словарей и опционально значение для ключа"""
     select_dict = []
     for i in list_dict:
-        if i["state"] == "EXECUTED":
+        if i["state"] == state:
             select_dict.append(i)
     return select_dict
 
