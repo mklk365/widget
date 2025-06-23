@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 
+
 def filter_by_state(list_dict, state="EXECUTED") -> List[Dict[str, Any]]:
     """Функция принимает список словарей и опционально значение для ключа"""
     select_dict = []
