@@ -20,5 +20,7 @@ def mask_account_card(card_or_schet_number: str) -> str:
 
 def get_date(date_original: str) -> str:
     """Функция обрабатывает строку с датой в новый формат"""
+    if len(date_original) < 12:
+        raise ValueError("Некорректная дата")
     date_ready = date_original[8:10] + "." + date_original[5:7] + "." + date_original[0:4]
     return date_ready
