@@ -13,3 +13,14 @@
 
 ## Примеры работы функций
 ...
+
+## Тестирование
+В отдельных тестовых файлах написаны тесты ко всем функциям проекта.
+*  `test_mask_card_number`
+*  `test_get_mask_account`
+*  `test_mask_account_card`
+*  `test_get_date`
+*  `test_filter_by_state`
+*  `test_sort_by_date`
+
+Функциональный код покрыт тестами на 100%

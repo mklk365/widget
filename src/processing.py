@@ -14,6 +14,6 @@ def sort_by_date(list_dict, reverse_date=True) -> List[Dict[str, Any]]:
     """Функция принимает список словарей и необязательный параметр, задающий порядок сортировки"""
     for item in list_dict:
         if not item.get("date"):
-            raise ValueError("Отсутствует Дата")
+            raise ValueError("Некорректная дата")
     sorted_list = sorted(list_dict, key=lambda rec: rec["date"], reverse=reverse_date)
     return sorted_list
