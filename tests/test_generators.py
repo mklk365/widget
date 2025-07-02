@@ -84,5 +84,25 @@ def test_transaction_descriptions(list_tranzact_test):
     gen = transaction_descriptions(list_tranzact_test)
     assert next(gen) == "Перевод организации"
 
-def test_card_number_generator():
-    pass
+@pytest.mark.parametrize("start, end, expected_output", [
+    # На вход подается корректный диапазон
+    (5, 6, ["0000 0000 0000 0005", "0000 0000 0000 0006"]),
+    (666, 667, ["0000 0000 0000 0666", "0000 0000 0000 0667"]),
+    (100100500, 100100501, ["0000 0001 0010 0500", "0000 0001 0010 0501"]),])
+def test_card_number_generator(start, end, expected_output):
+    assert card_number_generator(start, end) == expected_output
+
+@pytest.mark.parametrize("start, end, expected_exception", [
+    # Некорректные данные
+    (5, "q", ValueError),
+    ("s", 9, ValueError),
+    (0, 5, ValueError),
+    (-1, 3, ValueError),
+    (1, -3, ValueError),
+    # Start больше End
+    (10, 5, ValueError),
+    # Слишком большие числа
+    (1, 10000000000000000, ValueError),])
+def test_card_number_generator_errors(start, end, expected_exception):
+    with pytest.raises(expected_exception):
+        card_number_generator(start, end)
