@@ -15,6 +15,8 @@ def mask_account_card(card_or_schet_number: str) -> str:
         digit_for_mask = get_mask_card_number(digit_number)
     elif len(digit_number) == 20:
         digit_for_mask = get_mask_account(digit_number)
+    else:
+        raise ValueError("Некорректный номер")
     return f"{alpfa_number}{digit_for_mask}"
 
 
