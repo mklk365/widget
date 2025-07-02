@@ -80,8 +80,9 @@ from src.generators import filter_by_currency,transaction_descriptions, card_num
 def test_filter_by_currency(value, code, expected):
     assert list(filter_by_currency(value, code)) == expected
 
-def test_transaction_descriptions():
-    pass
+def test_transaction_descriptions(list_tranzact_test):
+    gen = transaction_descriptions(list_tranzact_test)
+    assert next(gen) == "Перевод организации"
 
 def test_card_number_generator():
     pass
