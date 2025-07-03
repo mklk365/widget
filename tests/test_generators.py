@@ -95,7 +95,7 @@ def test_card_number_generator(start, end, expected_output):
 @pytest.mark.parametrize("start, end, expected_exception", [
     # Некорректные данные
     (5, "q", ValueError),
-    ("s", 9, ValueError),
+    ("s", 20, ValueError),
     (0, 5, ValueError),
     (-1, 3, ValueError),
     (1, -3, ValueError),
