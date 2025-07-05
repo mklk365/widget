@@ -1,4 +1,4 @@
-from .masks import get_mask_account, get_mask_card_number
+from masks import get_mask_account, get_mask_card_number
 
 
 def mask_account_card(card_or_schet_number: str) -> str:

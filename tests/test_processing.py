@@ -1,5 +1,5 @@
 import pytest
-from src.processing import filter_by_state, sort_by_date
+from processing import filter_by_state, sort_by_date
 
 @pytest.mark.parametrize("value, state, expected", [
     # Фильтрация по EXECUTED
