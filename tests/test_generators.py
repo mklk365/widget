@@ -1,5 +1,5 @@
 import pytest
-from src.generators import filter_by_currency,transaction_descriptions, card_number_generator
+from generators import filter_by_currency,transaction_descriptions, card_number_generator
 
 @pytest.mark.parametrize("value, code, expected", [
     # Фильтрация по USD
@@ -95,7 +95,7 @@ def test_card_number_generator(start, end, expected_output):
 @pytest.mark.parametrize("start, end, expected_exception", [
     # Некорректные данные
     (5, "q", ValueError),
-    ("s", 9, ValueError),
+    ("s", 20, ValueError),
     (0, 5, ValueError),
     (-1, 3, ValueError),
     (1, -3, ValueError),
