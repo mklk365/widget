@@ -1,27 +1,83 @@
+import os
 import pytest
-from datetime import datetime
 
 from decorators import log
 
 
-@log()
-def successful_func():
-    return "Success!"
+def test_log_to_file():
+    """Тест записи логов в файл"""
+    test_filename = "test_log.txt"
 
-@log()
-def failing_func():
-    raise ValueError("Test error")
+    @log(filename=test_filename)
+    def successful_func():  # Объявление успешной функции
+        return "Success!"
 
-def test_start_message_is_printed(capsys):
-    """Проверяем, что в stdout выводится 'Start:'"""
-    successful_func()
-    captured = capsys.readouterr()
-    assert "Start:" in captured.out
+    result = successful_func()  # Вызов успешной функции
 
-def test_error_message_is_printed_on_exception(capsys):
-    """Проверяем, что при ошибке выводится сообщение с её текстом"""
+    assert os.path.exists(test_filename)  # Проверка создания файла
+
+    with open(test_filename, "r") as f:
+        content = f.read()
+    assert "Start:" in content  # Проверки наличия записей
+    assert "Result: Success!" in content
+    assert "End:" in content
+
+    os.remove(test_filename)  # Удаление файла
+
+
+def test_log_err_to_file():
+    """Тест записи ошибки в файл"""
+    test_filename = "test_log.txt"
+
+    @log(filename=test_filename)
+    def failing_func():  # Объявление ошибочной функции
+        raise ValueError("Test error")
+
     with pytest.raises(ValueError):
-        failing_func()
+        failing_func()  # Вызов ошибочной функции
+
+    assert os.path.exists(test_filename)  # Проверка создания файла
+
+    with open(test_filename, "r") as f:
+        content = f.read()
+    assert "Start:" in content  # Проверки наличия записей
+    assert "Name: failing_func error" in content
+    assert "Error: Test error" in content
+    assert "End:" in content
+
+    os.remove(test_filename)  # Удаление файла
+
+
+def test_log_in_console(capsys):
+    """Тест вывода логов в консоль"""
+
+    @log()
+    def successful_func():
+        return "Success!"
+
+    successful_func()  # Вызов успешной функции
     captured = capsys.readouterr()
-    assert "Error:" in captured.out
-    assert "Test error" in captured.out
+    output = captured.out
+
+    assert "Start:" in output
+    assert "Name: successful_func ok" in output
+    assert "Result: Success!" in output
+    assert "End:" in output
+
+
+def test_log_err_in_console(capsys):
+    """Тест вывода ошибки в консоль"""
+
+    @log()
+    def failing_func():
+        raise ValueError("Test error")
+
+    with pytest.raises(ValueError):
+        failing_func()  # Вызов ошибочной функции
+    captured = capsys.readouterr()
+    output = captured.out
+
+    assert "Start:" in output
+    assert "Name: failing_func error" in output
+    assert "Error: Test error" in output
+    assert "End:" in output
