@@ -81,3 +81,5 @@ def test_log_err_in_console(capsys):
     assert "Name: failing_func error" in output
     assert "Error: Test error" in output
     assert "End:" in output
+
+
