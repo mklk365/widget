@@ -11,6 +11,8 @@ def convert_apilayer_data(amount: str, code_from: str, code_to: str) -> float:
     текущего курса валют и конвертации суммы операции в рубли"""
     load_dotenv()  # Загрузка переменных из .env-файла
     apikey = os.getenv("API_KEY")  # Получение значения переменной API_KEY из .env-файла
+    if not apikey:
+        raise ValueError("API_KEY не найден в .env файле")
     headers = {"apikey": apikey}
     payload = {}
     url = f"https://api.apilayer.com/exchangerates_data/convert?to={code_to}&from={code_from}&amount={amount}"
@@ -44,15 +46,15 @@ def get_transaction_amount(transaction: Dict[str, Any]) -> float:
         raise Exception(f"Что-то пошло не так: {str(e)}")
 
 
-# if __name__ == '__main__':
-# """ Проверки """
-#   print(get_transaction_amount({}))
-
-#     """Проверка ответа сервиса при передаче явных данных"""
-#     print(convert_apilayer_data(amount="1200", code_to="USD", code_from="RUB"))
-
-# """Проверка конвертации при передаче данных из файла.json"""
-# from src.utils import load_json_data
-# file_path = os.path.join('..', 'data', 'operations.json')  # путь к JSON
-# transactions = load_json_data(file_path)
-# print(get_transaction_amount(transactions[1]))
+# if __name__ == "__main__":
+#     #   """ Проверки """
+#     print(get_transaction_amount({}))
+#
+#     # """Проверка ответа сервиса при передаче явных данных"""
+#     # print(convert_apilayer_data(amount="1200", code_to="USD", code_from="RUB"))
+#
+#     # """Проверка конвертации при передаче данных из файла.json"""
+#     # from src.utils import load_json_data
+#     # file_path = os.path.join('..', 'data', 'operations.json')  # путь к JSON
+#     # transactions = load_json_data(file_path)
+#     # print(get_transaction_amount(transactions[0]))

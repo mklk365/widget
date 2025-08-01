@@ -1,5 +1,4 @@
 from unittest.mock import patch, mock_open
-import pytest
 import json
 
 from utils import load_json_data
@@ -30,9 +29,9 @@ def test_load_valid_list_data():
     test_data = [{"id": 1}, {"id": 2}]  # Корректный список
     file_path = "any_path.json"
     with (
-        patch("os.path.getsize", return_value=100), # Мок getsize, чтобы файл "существовал" и не был пустым
-        patch("builtins.open", mock_open()), # Мок файла
-        patch("json.load", return_value=test_data), # Мок json.load
+        patch("os.path.getsize", return_value=100),  # Мок getsize, чтобы файл "существовал" и не был пустым
+        patch("builtins.open", mock_open()),  # Мок файла
+        patch("json.load", return_value=test_data),  # Мок json.load
     ):
         result = load_json_data(file_path)
         assert result == test_data

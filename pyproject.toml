@@ -41,7 +41,7 @@ warn_return_any = true
 exclude = 'venv'
 
 [tool.black]
-line-length = 119
+line-length = 127
 exclude = '''.git'''
 
 [tool.isort]
