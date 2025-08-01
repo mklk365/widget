@@ -81,4 +81,48 @@ def test_filter_by_state(value, state, expected):
     ],
 )
 def test_sort_by_date(input_list, reverse_date, expected_output):
+    """Тестирование основной функциональности сортировки по дате"""
     assert sort_by_date(input_list, reverse_date) == expected_output
+
+
+@pytest.mark.parametrize(
+    "input_list, error_message",
+    [
+        # Отсутствует ключ date
+        ([{"id": 1}, {"id": 2, "date": "2019-07-03T18:35:29.512364"}], "Некорректная дата"),
+        # Пустое значение даты
+        ([{"id": 1, "date": ""}, {"id": 2, "date": "2019-07-03T18:35:29.512364"}], "Некорректная дата"),
+        # None вместо даты
+        ([{"id": 1, "date": None}, {"id": 2, "date": "2019-07-03T18:35:29.512364"}], "Некорректная дата"),
+    ],
+)
+def test_sort_by_date_errors(input_list, error_message):
+    """Тестирование обработки некорректных входных данных.
+    Проверяет, что функция корректно выбрасывает ValueError при:
+    - Отсутствии ключа 'date' в словаре
+    - Пустом значении даты
+    - Значении None в поле даты
+    """
+    with pytest.raises(ValueError, match=error_message):
+        sort_by_date(input_list)
+
+
+def test_sort_by_date_single_element():
+    """Тестирование обработки списка с одним элементом.
+    Проверяет, что:
+    - Функция корректно обрабатывает список из одного элемента
+    - Возвращается тот же список без изменений
+    """
+    input_list = [{"id": 1, "date": "2019-07-03T18:35:29.512364"}]
+    assert sort_by_date(input_list) == input_list
+
+
+def test_sort_by_date_does_not_modify_input():
+    """Тестирование неизменяемости входного списка.
+    Проверяет, что функция не изменяет переданный ей список,
+    а возвращает новый отсортированный список.
+    """
+    input_list = [{"id": 2, "date": "2018-06-30T02:08:58.425572"}, {"id": 1, "date": "2019-07-03T18:35:29.512364"}]
+    input_list_copy = input_list.copy()
+    sort_by_date(input_list)
+    assert input_list == input_list_copy
