@@ -36,17 +36,6 @@
 * masks
 ## Тестирование
 В отдельных тестовых файлах написаны тесты ко всем функциям проекта.
-*  `test_mask_card_number`
-*  `test_get_mask_account`
-*  `test_mask_account_card`
-*  `test_get_date`
-*  `test_filter_by_state`
-*  `test_sort_by_date`
-*  `test_filter_by_currency`
-*  `test_transaction_descriptions`
-*  `test_card_number_generator`
-*  `test_decorators`
-*  `test_external_api`
 
 Функциональный код покрыт тестами на 100%
 
