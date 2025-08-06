@@ -37,7 +37,10 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-htmlcov/
+# Игнорировать всю папку htmlcov, кроме index.html
+htmlcov/*
+!htmlcov/index.html
+
 .tox/
 .nox/
 .coverage
