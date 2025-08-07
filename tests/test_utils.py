@@ -69,12 +69,9 @@ def test_load_nonexistent_csv():
 
 def test_encoding_csv():
     """Проверяет обработку CSV с некорректной кодировкой."""
-    with patch("builtins.open") as mocked_open, \
-            patch("utils.utils_logger.error") as mocked_logger:
+    with patch("builtins.open") as mocked_open, patch("utils.utils_logger.error") as mocked_logger:
         # Эмулируем ошибку кодировки ПРИ ОТКРЫТИИ файла
-        mocked_open.side_effect = UnicodeDecodeError(
-            "utf-8", b"\xff\x00", 0, 1, "Invalid UTF-8"
-        )
+        mocked_open.side_effect = UnicodeDecodeError("utf-8", b"\xff\x00", 0, 1, "Invalid UTF-8")
         result = load_csv_data("any_path.csv")
         assert result == []  # Проверяем возвращаемое значение
         # Проверяем, что логгер был вызван с нужной ошибкой
