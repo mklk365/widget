@@ -192,6 +192,6 @@ def main():
         result_transactions = process_transactions(params)
         print_transactions(result_transactions)
 
+
 if __name__ == "__main__":
     main()
-

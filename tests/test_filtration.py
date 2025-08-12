@@ -42,10 +42,11 @@ def test_invalid_regex(bank_operations):
 def test_main_with_data_successful_search(bank_operations, capsys, monkeypatch):
     """Тест main с данными и успешным поиском"""
     # Мокаем загрузку данных
-    monkeypatch.setattr('filtration.load_json_data', lambda _: bank_operations)
+    monkeypatch.setattr("filtration.load_json_data", lambda _: bank_operations)
 
     # Вызываем main
     from filtration import main
+
     main()
 
     captured = capsys.readouterr()
@@ -57,10 +58,11 @@ def test_main_with_data_successful_search(bank_operations, capsys, monkeypatch):
 def test_main_with_empty_data(capsys, monkeypatch):
     """Тест main при отсутствии данных"""
     # Мокаем загрузку пустых данных
-    monkeypatch.setattr('filtration.load_json_data', lambda _: [])
+    monkeypatch.setattr("filtration.load_json_data", lambda _: [])
 
     # Вызываем main
     from filtration import main
+
     main()
 
     captured = capsys.readouterr()
@@ -70,15 +72,16 @@ def test_main_with_empty_data(capsys, monkeypatch):
 def test_main_output_format(bank_operations, capsys, monkeypatch):
     """Тест формата вывода результатов"""
     # Мокаем загрузку данных
-    monkeypatch.setattr('filtration.load_json_data', lambda _: bank_operations)
+    monkeypatch.setattr("filtration.load_json_data", lambda _: bank_operations)
 
     # Вызываем main
     from filtration import main
+
     main()
 
     captured = capsys.readouterr()
     # Проверяем что вывод похож на список словарей
-    assert captured.out.startswith('[') and captured.out.endswith(']\n')
+    assert captured.out.startswith("[") and captured.out.endswith("]\n")
     # Или более строгая проверка формата, если знаете точный формат вывода
 
 
@@ -89,7 +92,7 @@ def test_main_file_error_handling(capsys, monkeypatch):
     def mock_load_failed(_):
         raise FileNotFoundError("File not found")
 
-    monkeypatch.setattr('filtration.load_json_data', mock_load_failed)
+    monkeypatch.setattr("filtration.load_json_data", mock_load_failed)
     main()
     captured = capsys.readouterr()
     assert "Файл с данными не найден!" in captured.out
@@ -101,7 +104,7 @@ def test_main_general_exception_handling(capsys, monkeypatch):
     def mock_load_failed(_):
         raise Exception("Some error")
 
-    monkeypatch.setattr('filtration.load_json_data', mock_load_failed)
+    monkeypatch.setattr("filtration.load_json_data", mock_load_failed)
     main()
     captured = capsys.readouterr()
     assert "Произошла ошибка: Some error" in captured.out
@@ -109,9 +112,10 @@ def test_main_general_exception_handling(capsys, monkeypatch):
 
 def test_main_successful_execution(bank_operations, capsys, monkeypatch):
     """Тест успешного выполнения"""
-    monkeypatch.setattr('filtration.load_json_data', lambda _: bank_operations)
+    monkeypatch.setattr("filtration.load_json_data", lambda _: bank_operations)
 
     from filtration import main
+
     main()
 
     captured = capsys.readouterr()

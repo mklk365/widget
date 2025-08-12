@@ -47,7 +47,7 @@ def test_mine_invalid_status_output(capsys):
     # Подготавливаем входные данные: сначала неверный статус, затем верный
     inputs = ["1", "INVALID_STATUS", "EXECUTED", "нет", "нет", "нет"]
 
-    with patch('builtins.input', side_effect=inputs):
+    with patch("builtins.input", side_effect=inputs):
         # Вызываем функцию
         result = mine()
 
@@ -68,7 +68,7 @@ def test_mine_xlsx_file_output(capsys):
     # Подготавливаем входные данные: выбираем XLSX (пункт 3), затем корректный статус и остальные параметры
     inputs = ["3", "EXECUTED", "нет", "нет", "нет"]
 
-    with patch('builtins.input', side_effect=inputs):
+    with patch("builtins.input", side_effect=inputs):
         # Вызываем функцию
         result = mine()
 
@@ -86,7 +86,7 @@ def test_mine_xlsx_file_output(capsys):
 def test_full_pipeline(capsys, monkeypatch):
     # 1. Настраиваем входные данные
     inputs = ["1", "EXECUTED", "нет", "нет", "нет"]
-    monkeypatch.setattr('builtins.input', lambda prompt=None: inputs.pop(0))
+    monkeypatch.setattr("builtins.input", lambda prompt=None: inputs.pop(0))
 
     # 2. Подготавливаем тестовые данные
     test_transaction = {
@@ -94,21 +94,18 @@ def test_full_pipeline(capsys, monkeypatch):
         "description": "Payment",
         "from": "Visa 1234567812345678",
         "to": "Счет 9876543210",
-        "operationAmount": {
-            "amount": "100.50",
-            "currency": {"name": "USD"}
-        },
-        "state": "EXECUTED"  # Добавляем обязательное поле
+        "operationAmount": {"amount": "100.50", "currency": {"name": "USD"}},
+        "state": "EXECUTED",  # Добавляем обязательное поле
     }
 
     # 3. Мокируем все зависимости
-    with patch('mine.load_json_data', return_value=[test_transaction]), \
-            patch('mine.format_transaction') as mock_format:
+    with patch("mine.load_json_data", return_value=[test_transaction]), patch("mine.format_transaction") as mock_format:
         # Настраиваем форматированную строку
         mock_format.return_value = "01.01.2023 Payment\nVisa 1234 56** **** 5678 -> Счет **3210\nСумма: 100.5 USD\n"
 
         # 4. Вызываем основной код
         from mine import main
+
         main()
 
         # 5. Проверяем вывод
@@ -123,10 +120,11 @@ def test_full_pipeline(capsys, monkeypatch):
 
 def test_main_with_invalid_file_type(capsys, monkeypatch):
     inputs = ["4", "1", "EXECUTED", "нет", "нет", "нет"]
-    monkeypatch.setattr('builtins.input', lambda prompt=None: inputs.pop(0))
+    monkeypatch.setattr("builtins.input", lambda prompt=None: inputs.pop(0))
 
     # Просто вызываем main() напрямую
     from mine import main
+
     main()
 
     captured = capsys.readouterr()
@@ -136,11 +134,12 @@ def test_main_with_invalid_file_type(capsys, monkeypatch):
 def test_main_early_exit(capsys, monkeypatch):
     """Тестирует выход при None параметрах"""
     # Мокаем mine() чтобы вернуть None (имитируем ранний выход)
-    with patch('mine.mine', return_value=None):
+    with patch("mine.mine", return_value=None):
         # Запускаем основной код
         from mine import __name__ as module_name
-        if module_name == '__main__':
-            exec(open('mine.py').read())
+
+        if module_name == "__main__":
+            exec(open("mine.py").read())
 
         # Проверяем что нет вывода про транзакции
         captured = capsys.readouterr()
@@ -149,15 +148,14 @@ def test_main_early_exit(capsys, monkeypatch):
 
 def test_main_block(capsys):
     """Тестирование основного блока выполнения"""
-    with patch('mine.mine') as mock_mine, \
-            patch('mine.process_transactions') as mock_process:
+    with patch("mine.mine") as mock_mine, patch("mine.process_transactions") as mock_process:
         # Настраиваем возвращаемые значения моков
         mock_mine.return_value = {
             "file_type": "1",
             "status": "EXECUTED",
             "sort_by_date": False,
             "rub_only": False,
-            "filter_by_word": False
+            "filter_by_word": False,
         }
 
         mock_process.return_value = [
@@ -166,16 +164,14 @@ def test_main_block(capsys):
                 "description": "Test transaction",
                 "from": "Счет 1234567890123456",
                 "to": "Счет 6543210987654321",
-                "operationAmount": {
-                    "amount": "1000",
-                    "currency": {"name": "руб."}
-                },
-                "state": "EXECUTED"
+                "operationAmount": {"amount": "1000", "currency": {"name": "руб."}},
+                "state": "EXECUTED",
             }
         ]
 
         # Вызываем функцию main()
         from mine import main
+
         main()
 
         # Проверяем вывод
@@ -191,15 +187,14 @@ def test_main_block(capsys):
 def test_no_transactions_message(capsys):
     """Тестирует вывод сообщения об отсутствии транзакций"""
     # 1. Мокируем функции
-    with patch('mine.mine') as mock_mine, \
-            patch('mine.process_transactions') as mock_process:
+    with patch("mine.mine") as mock_mine, patch("mine.process_transactions") as mock_process:
         # 2. Настраиваем возвращаемые значения
         mock_mine.return_value = {
             "file_type": "1",
             "status": "EXECUTED",
             "sort_by_date": False,
             "rub_only": False,
-            "filter_by_word": False
+            "filter_by_word": False,
         }
 
         # Возвращаем пустой список транзакций
@@ -207,6 +202,7 @@ def test_no_transactions_message(capsys):
 
         # 3. Вызываем main()
         from mine import main
+
         main()
 
         # 4. Проверяем вывод
@@ -217,6 +213,7 @@ def test_no_transactions_message(capsys):
 def test_print_transactions_empty_list(capsys):
     """Тестирует вывод при пустом списке транзакций"""
     from mine import print_transactions
+
     print_transactions([])
 
     captured = capsys.readouterr()
@@ -226,20 +223,22 @@ def test_print_transactions_empty_list(capsys):
 
 def test_print_transactions_with_data(capsys):
     """Тестирует вывод с реальными данными"""
-    test_data = [{
-        "date": "2023-01-01",
-        "description": "Test",
-        "from": "Visa 1234567812345678",
-        "to": "Счет 9876543210",
-        "operationAmount": {
-            "amount": "100.00",
-            "currency": {"name": "руб."}
+    test_data = [
+        {
+            "date": "2023-01-01",
+            "description": "Test",
+            "from": "Visa 1234567812345678",
+            "to": "Счет 9876543210",
+            "operationAmount": {"amount": "100.00", "currency": {"name": "руб."}},
         }
-    }]
+    ]
 
-    with patch('mine.format_transaction',
-               return_value="01.01.2023 Test\nVisa 1234 56** **** 5678 -> Счет **3210\nСумма: 100.00 руб.\n"):
+    with patch(
+        "mine.format_transaction",
+        return_value="01.01.2023 Test\nVisa 1234 56** **** 5678 -> Счет **3210\nСумма: 100.00 руб.\n",
+    ):
         from mine import print_transactions
+
         print_transactions(test_data)
 
         captured = capsys.readouterr()
@@ -249,15 +248,18 @@ def test_print_transactions_with_data(capsys):
 
 def test_main_full_flow(capsys):
     """Тестирует полный поток выполнения"""
-    with patch('mine.mine') as mock_mine, \
-            patch('mine.process_transactions') as mock_process, \
-            patch('mine.print_transactions') as mock_print:
+    with (
+        patch("mine.mine") as mock_mine,
+        patch("mine.process_transactions") as mock_process,
+        patch("mine.print_transactions") as mock_print,
+    ):
         # Настраиваем моки
         mock_mine.return_value = {"file_type": "1", "status": "EXECUTED"}
         mock_process.return_value = ["transaction_data"]
 
         # Вызываем main
         from mine import main
+
         main()
 
         # Проверяем вызовы
@@ -311,11 +313,11 @@ def test_process_transactions_xlsx_file():
         "status": "EXECUTED",
         "sort_by_date": False,
         "rub_only": False,
-        "filter_by_word": False
+        "filter_by_word": False,
     }
 
     # Мокаем именно ту функцию, которая используется для загрузки XLSX
-    with patch('utils.load_xlsx_data', return_value=test_data) as mock_load_xlsx:
+    with patch("utils.load_xlsx_data", return_value=test_data) as mock_load_xlsx:
         result = process_transactions(params, "test.xlsx")
 
         # Проверяем что функция загрузки была вызвана
@@ -328,12 +330,9 @@ def test_process_transactions_xlsx_file():
 
 def test_process_transactions_xlsx_file_not_found():
     """Тестирует обработку отсутствия XLSX-файла"""
-    params = {
-        "file_type": "3",
-        "status": "EXECUTED"
-    }
+    params = {"file_type": "3", "status": "EXECUTED"}
 
-    with patch('utils.load_xlsx_data', return_value=None):
+    with patch("utils.load_xlsx_data", return_value=None):
         result = process_transactions(params, "nonexistent.xlsx")
         assert result == []
 
@@ -351,14 +350,15 @@ def test_process_transactions_xlsx_file():
         "status": "EXECUTED",
         "sort_by_date": False,
         "rub_only": False,
-        "filter_by_word": False
+        "filter_by_word": False,
     }
 
     # Вариант 1: Используем полный путь к функции
-    with patch('mine.load_xlsx_data', return_value=test_data) as mock_load:
+    with patch("mine.load_xlsx_data", return_value=test_data) as mock_load:
         # Переимпортируем модуль, чтобы применить мок
         import importlib
         from mine import process_transactions
+
         importlib.reload(mine)
 
         result = process_transactions(params, "test.xlsx")
@@ -380,7 +380,7 @@ def test_process_transactions_xlsx_file():
         def mock_load(path):
             return test_data
 
-        monkeypatch.setattr('mine.load_xlsx_data', mock_load)
+        monkeypatch.setattr("mine.load_xlsx_data", mock_load)
 
         result = process_transactions(params, "test.xlsx")
         assert len(result) == 1
@@ -399,12 +399,13 @@ def test_process_transactions_xlsx_file():
         "status": "EXECUTED",
         "sort_by_date": False,
         "rub_only": False,
-        "filter_by_word": False
+        "filter_by_word": False,
     }
 
     # Вариант 1: Мокаем функцию в utils
-    with patch('utils.load_xlsx_data', return_value=test_data) as mock_load:
+    with patch("utils.load_xlsx_data", return_value=test_data) as mock_load:
         from mine import process_transactions
+
         result = process_transactions(params, "test.xlsx")
 
         # Проверяем что функция была вызвана
@@ -417,7 +418,8 @@ def test_process_transactions_xlsx_file():
 
     # Вариант 2: Альтернативный способ с mock.patch.object
     from utils import load_xlsx_data
-    with patch.object(load_xlsx_data, '__code__', new=lambda x: test_data):
+
+    with patch.object(load_xlsx_data, "__code__", new=lambda x: test_data):
         result = process_transactions(params, "test.xlsx")
         assert len(result) == 1
 
@@ -444,24 +446,19 @@ def test_process_transactions_xlsx_file():
         {"state": "EXECUTED", "date": "2023-01-01", "operationAmount": {"amount": "100", "currency": {"code": "RUB"}}}
     ]
 
-    params = {
-        "file_type": "3",
-        "status": "EXECUTED",
-        "sort_by_date": False,
-        "rub_only": False,
-        "filter_by_word": False
-    }
+    params = {"file_type": "3", "status": "EXECUTED", "sort_by_date": False, "rub_only": False, "filter_by_word": False}
 
     # Вариант 1: Мокаем функцию в том месте, где она реально используется
-    with patch('mine.load_xlsx_data', return_value=test_data, create=True) as mock_load:
+    with patch("mine.load_xlsx_data", return_value=test_data, create=True) as mock_load:
         from mine import process_transactions
+
         result = process_transactions(params, "test.xlsx")
 
         if not mock_load.called:
             print("\nФункция load_xlsx_data не была вызвана. Альтернативные пути:")
             print("Попробуем мокать utils.load_xlsx_data")
 
-            with patch('utils.load_xlsx_data', return_value=test_data) as mock_utils_load:
+            with patch("utils.load_xlsx_data", return_value=test_data) as mock_utils_load:
                 result = process_transactions(params, "test.xlsx")
                 assert mock_utils_load.called
                 assert len(result) == 1
@@ -471,10 +468,7 @@ def test_process_transactions_xlsx_file():
 
 def test_process_transactions_invalid_file_type():
     """Тестирует обработку неверного типа файла"""
-    params = {
-        "file_type": "4",  # Неверный тип
-        "status": "EXECUTED"
-    }
+    params = {"file_type": "4", "status": "EXECUTED"}  # Неверный тип
 
     result = process_transactions(params)
 
@@ -498,10 +492,10 @@ def test_process_transactions_rub_only():
         "status": "EXECUTED",
         "rub_only": True,  # Включена фильтрация по RUB
         "sort_by_date": False,
-        "filter_by_word": False
+        "filter_by_word": False,
     }
 
-    with patch('mine.load_json_data', return_value=test_data):
+    with patch("mine.load_json_data", return_value=test_data):
         result = process_transactions(params)
 
         # Проверяем что остались только рублевые транзакции
@@ -523,10 +517,10 @@ def test_process_transactions_not_rub_only():
         "status": "EXECUTED",
         "rub_only": False,  # Фильтрация по RUB выключена
         "sort_by_date": False,
-        "filter_by_word": False
+        "filter_by_word": False,
     }
 
-    with patch('mine.load_json_data', return_value=test_data):
+    with patch("mine.load_json_data", return_value=test_data):
         result = process_transactions(params)
 
         # Проверяем что все транзакции остались
@@ -544,15 +538,9 @@ def test_process_transactions_rub_only_with_missing_data():
         {"state": "EXECUTED", "operationAmount": {"currency": {}}},  # Нет code
     ]
 
-    params = {
-        "file_type": "1",
-        "status": "EXECUTED",
-        "rub_only": True,
-        "sort_by_date": False,
-        "filter_by_word": False
-    }
+    params = {"file_type": "1", "status": "EXECUTED", "rub_only": True, "sort_by_date": False, "filter_by_word": False}
 
-    with patch('mine.load_json_data', return_value=test_data):
+    with patch("mine.load_json_data", return_value=test_data):
         result = process_transactions(params)
 
         # Проверяем что осталась только одна рублевая транзакция
@@ -574,10 +562,10 @@ def test_process_transactions_filter_by_partial_word():
         "filter_by_word": True,
         "filter_word": "перевод",
         "rub_only": False,
-        "sort_by_date": False
+        "sort_by_date": False,
     }
 
-    with patch('mine.load_json_data', return_value=test_data):
+    with patch("mine.load_json_data", return_value=test_data):
         result = process_transactions(params)
         assert len(result) == 3  # Все содержат "перевод" в разных формах
 
@@ -596,10 +584,10 @@ def test_process_transactions_sort_ascending():
         "sort_by_date": True,
         "sort_by_date_up": True,  # Сортировка по возрастанию
         "rub_only": False,
-        "filter_by_word": False
+        "filter_by_word": False,
     }
 
-    with patch('mine.load_json_data', return_value=test_data):
+    with patch("mine.load_json_data", return_value=test_data):
         result = process_transactions(params)
 
         # Проверяем порядок дат
@@ -621,10 +609,10 @@ def test_process_transactions_sort_descending():
         "sort_by_date": True,
         "sort_by_date_up": False,  # Сортировка по убыванию
         "rub_only": False,
-        "filter_by_word": False
+        "filter_by_word": False,
     }
 
-    with patch('mine.load_json_data', return_value=test_data):
+    with patch("mine.load_json_data", return_value=test_data):
         result = process_transactions(params)
 
         # Проверяем порядок дат
@@ -646,10 +634,10 @@ def test_process_transactions_sort_with_missing_dates():
         "sort_by_date": True,
         "sort_by_date_up": True,
         "rub_only": False,
-        "filter_by_word": False
+        "filter_by_word": False,
     }
 
-    with patch('mine.load_json_data', return_value=test_data):
+    with patch("mine.load_json_data", return_value=test_data):
         result = process_transactions(params)
 
         # Разделяем транзакции с датами и без
@@ -657,11 +645,12 @@ def test_process_transactions_sort_with_missing_dates():
         dated = [t for t in result if "date" in t]
 
         # Проверяем что сначала идут транзакции без дат
-        assert all(t in undated for t in result[:len(undated)])
+        assert all(t in undated for t in result[: len(undated)])
 
         # Проверяем сортировку транзакций с датами
         dated_dates = [t["date"] for t in dated]
         assert dated_dates == sorted(dated_dates)  # Для возрастания
+
 
 def test_process_transactions_no_sorting():
     """Тестирует отсутствие сортировки при sort_by_date=False"""
@@ -678,14 +667,15 @@ def test_process_transactions_no_sorting():
         "sort_by_date": False,  # Сортировка отключена
         "sort_by_date_up": True,
         "rub_only": False,
-        "filter_by_word": False
+        "filter_by_word": False,
     }
 
-    with patch('mine.load_json_data', return_value=test_data):
+    with patch("mine.load_json_data", return_value=test_data):
         result = process_transactions(params)
 
         # Проверяем что порядок не изменился
         assert [t["date"] for t in result] == original_order
+
 
 """Тестирование format_transaction"""
 
@@ -791,16 +781,13 @@ def test_format_transaction_account_no_mask():
 
 def test_format_transaction_card_masking(monkeypatch):
     """Альтернативный вариант с monkeypatch"""
-    transaction = {
-        "to": "Visa Platinum 1234567890123456",
-        "description": "Тест"
-    }
+    transaction = {"to": "Visa Platinum 1234567890123456", "description": "Тест"}
 
     def mock_mask(number):
         assert number == "1234567890123456"
         return "1234 56** **** 3456"
 
-    monkeypatch.setattr('masks.get_mask_card_number', mock_mask)
+    monkeypatch.setattr("masks.get_mask_card_number", mock_mask)
 
     result = format_transaction(transaction)
     assert "Visa Platinum 1234 56** **** 3456" in result
@@ -817,7 +804,7 @@ def test_format_transaction_card_masking_error():
     }
 
     # Вариант 1: Используем patch.object для конкретного модуля
-    with patch.object(masks, 'get_mask_card_number', side_effect=ValueError("Invalid card number")) as mock_mask:
+    with patch.object(masks, "get_mask_card_number", side_effect=ValueError("Invalid card number")) as mock_mask:
         result = format_transaction(transaction)
 
         # Проверяем что в результате используется оригинальный номер карты
@@ -828,8 +815,9 @@ def test_format_transaction_card_masking_error():
     # Вариант 2: Альтернативный способ с переимпортом
     import importlib
     import mine
+
     importlib.reload(mine)
 
-    with patch('mine.get_mask_card_number', side_effect=ValueError("Invalid card number")) as mock_mask:
+    with patch("mine.get_mask_card_number", side_effect=ValueError("Invalid card number")) as mock_mask:
         result = mine.format_transaction(transaction)
         assert "Visa Platinum 123" in result
