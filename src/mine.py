@@ -174,19 +174,24 @@ def format_transaction(transaction):
     return "\n".join(result)
 
 
-if __name__ == "__main__":
-    # Получаем параметры от пользователя
+def print_transactions(transactions):
+    """Выводит список транзакций в консоль"""
+    print("\nРаспечатываю итоговый список транзакций...\n")
+    if not transactions:
+        print("Не найдено ни одной транзакции, подходящей под ваши условия фильтрации")
+    else:
+        print(f"Всего банковских операций в выборке: {len(transactions)}\n")
+        for transaction in transactions:
+            print(format_transaction(transaction))
+
+
+def main():
+    """Основная функция, обрабатывающая весь поток работы"""
     params = mine()
-
     if params is not None:
-        # Обрабатываем транзакции согласно параметрам
         result_transactions = process_transactions(params)
+        print_transactions(result_transactions)
 
-        # Выводим результат
-        print("\nРаспечатываю итоговый список транзакций...\n")
-        if not result_transactions:  # Если список транзакций пустой
-            print("Не найдено ни одной транзакции, подходящей под ваши условия фильтрации")
-        else:
-            print(f"Всего банковских операций в выборке: {len(result_transactions)}\n")
-            for transaction in result_transactions:
-                print(format_transaction(transaction))
+if __name__ == "__main__":
+    main()
+

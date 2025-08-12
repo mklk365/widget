@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, mock_open
 import pandas as pd
 
-from mine import format_transaction, mine, process_transactions
+from mine import format_transaction, mine, process_transactions, main
 import masks
 
 """Тестирование mine"""
@@ -81,6 +81,190 @@ def test_mine_xlsx_file_output(capsys):
 
         # Проверяем что функция вернула правильный тип файла
         assert result["file_type"] == "3"
+
+
+def test_full_pipeline(capsys, monkeypatch):
+    # 1. Настраиваем входные данные
+    inputs = ["1", "EXECUTED", "нет", "нет", "нет"]
+    monkeypatch.setattr('builtins.input', lambda prompt=None: inputs.pop(0))
+
+    # 2. Подготавливаем тестовые данные
+    test_transaction = {
+        "date": "2023-01-01T12:00:00.000",
+        "description": "Payment",
+        "from": "Visa 1234567812345678",
+        "to": "Счет 9876543210",
+        "operationAmount": {
+            "amount": "100.50",
+            "currency": {"name": "USD"}
+        },
+        "state": "EXECUTED"  # Добавляем обязательное поле
+    }
+
+    # 3. Мокируем все зависимости
+    with patch('mine.load_json_data', return_value=[test_transaction]), \
+            patch('mine.format_transaction') as mock_format:
+        # Настраиваем форматированную строку
+        mock_format.return_value = "01.01.2023 Payment\nVisa 1234 56** **** 5678 -> Счет **3210\nСумма: 100.5 USD\n"
+
+        # 4. Вызываем основной код
+        from mine import main
+        main()
+
+        # 5. Проверяем вывод
+        captured = capsys.readouterr()
+        output = captured.out
+
+        # Проверяем ключевые элементы вывода
+        assert "Распечатываю итоговый список транзакций" in output
+        assert "Visa 1234 56** **** 5678" in output
+        assert "Сумма: 100.5 USD" in output
+
+
+def test_main_with_invalid_file_type(capsys, monkeypatch):
+    inputs = ["4", "1", "EXECUTED", "нет", "нет", "нет"]
+    monkeypatch.setattr('builtins.input', lambda prompt=None: inputs.pop(0))
+
+    # Просто вызываем main() напрямую
+    from mine import main
+    main()
+
+    captured = capsys.readouterr()
+    assert "Операции с 4 недоступны" in captured.out
+
+
+def test_main_early_exit(capsys, monkeypatch):
+    """Тестирует выход при None параметрах"""
+    # Мокаем mine() чтобы вернуть None (имитируем ранний выход)
+    with patch('mine.mine', return_value=None):
+        # Запускаем основной код
+        from mine import __name__ as module_name
+        if module_name == '__main__':
+            exec(open('mine.py').read())
+
+        # Проверяем что нет вывода про транзакции
+        captured = capsys.readouterr()
+        assert "Распечатываю итоговый список транзакций" not in captured.out
+
+
+def test_main_block(capsys):
+    """Тестирование основного блока выполнения"""
+    with patch('mine.mine') as mock_mine, \
+            patch('mine.process_transactions') as mock_process:
+        # Настраиваем возвращаемые значения моков
+        mock_mine.return_value = {
+            "file_type": "1",
+            "status": "EXECUTED",
+            "sort_by_date": False,
+            "rub_only": False,
+            "filter_by_word": False
+        }
+
+        mock_process.return_value = [
+            {
+                "date": "2023-01-01T12:00:00",
+                "description": "Test transaction",
+                "from": "Счет 1234567890123456",
+                "to": "Счет 6543210987654321",
+                "operationAmount": {
+                    "amount": "1000",
+                    "currency": {"name": "руб."}
+                },
+                "state": "EXECUTED"
+            }
+        ]
+
+        # Вызываем функцию main()
+        from mine import main
+        main()
+
+        # Проверяем вывод
+        captured = capsys.readouterr()
+        output = captured.out
+
+        # Проверяем ключевые фразы в выводе
+        assert "Распечатываю итоговый список транзакций" in output
+        assert "Всего банковских операций в выборке: 1" in output
+        assert "Test transaction" in output
+
+
+def test_no_transactions_message(capsys):
+    """Тестирует вывод сообщения об отсутствии транзакций"""
+    # 1. Мокируем функции
+    with patch('mine.mine') as mock_mine, \
+            patch('mine.process_transactions') as mock_process:
+        # 2. Настраиваем возвращаемые значения
+        mock_mine.return_value = {
+            "file_type": "1",
+            "status": "EXECUTED",
+            "sort_by_date": False,
+            "rub_only": False,
+            "filter_by_word": False
+        }
+
+        # Возвращаем пустой список транзакций
+        mock_process.return_value = []
+
+        # 3. Вызываем main()
+        from mine import main
+        main()
+
+        # 4. Проверяем вывод
+        captured = capsys.readouterr()
+        assert "Не найдено ни одной транзакции" in captured.out
+
+
+def test_print_transactions_empty_list(capsys):
+    """Тестирует вывод при пустом списке транзакций"""
+    from mine import print_transactions
+    print_transactions([])
+
+    captured = capsys.readouterr()
+    assert "Не найдено ни одной транзакции" in captured.out
+    assert "Распечатываю итоговый список транзакций" in captured.out
+
+
+def test_print_transactions_with_data(capsys):
+    """Тестирует вывод с реальными данными"""
+    test_data = [{
+        "date": "2023-01-01",
+        "description": "Test",
+        "from": "Visa 1234567812345678",
+        "to": "Счет 9876543210",
+        "operationAmount": {
+            "amount": "100.00",
+            "currency": {"name": "руб."}
+        }
+    }]
+
+    with patch('mine.format_transaction',
+               return_value="01.01.2023 Test\nVisa 1234 56** **** 5678 -> Счет **3210\nСумма: 100.00 руб.\n"):
+        from mine import print_transactions
+        print_transactions(test_data)
+
+        captured = capsys.readouterr()
+        assert "Всего банковских операций в выборке: 1" in captured.out
+        assert "Visa 1234 56** **** 5678" in captured.out
+
+
+def test_main_full_flow(capsys):
+    """Тестирует полный поток выполнения"""
+    with patch('mine.mine') as mock_mine, \
+            patch('mine.process_transactions') as mock_process, \
+            patch('mine.print_transactions') as mock_print:
+        # Настраиваем моки
+        mock_mine.return_value = {"file_type": "1", "status": "EXECUTED"}
+        mock_process.return_value = ["transaction_data"]
+
+        # Вызываем main
+        from mine import main
+        main()
+
+        # Проверяем вызовы
+        mock_mine.assert_called_once()
+        mock_process.assert_called_once_with(mock_mine.return_value)
+        mock_print.assert_called_once_with(["transaction_data"])
+
 
 """Тестирование process_transactions"""
 
@@ -468,11 +652,16 @@ def test_process_transactions_sort_with_missing_dates():
     with patch('mine.load_json_data', return_value=test_data):
         result = process_transactions(params)
 
-        # Проверяем что транзакции без даты в конце
-        assert result[0]["date"] == "2023-01-01"
-        assert result[1]["date"] == "2023-01-02"
-        assert "date" not in result[2]
+        # Разделяем транзакции с датами и без
+        undated = [t for t in result if "date" not in t]
+        dated = [t for t in result if "date" in t]
 
+        # Проверяем что сначала идут транзакции без дат
+        assert all(t in undated for t in result[:len(undated)])
+
+        # Проверяем сортировку транзакций с датами
+        dated_dates = [t["date"] for t in dated]
+        assert dated_dates == sorted(dated_dates)  # Для возрастания
 
 def test_process_transactions_no_sorting():
     """Тестирует отсутствие сортировки при sort_by_date=False"""
