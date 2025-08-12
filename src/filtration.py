@@ -18,13 +18,19 @@ def process_bank_search(data: list[dict], search: str) -> list[dict]:
     return [transaction for transaction in data if "description" in transaction and pattern.search(transaction["description"])]
 
 
-if __name__ == "__main__":
-    # Загрузка данных
-    transactions = load_json_data(json_file_path)
+def main():
+    try:
+        transactions = load_json_data(json_file_path)
+        if not transactions:
+            print("Нет данных для обработки!")
+            return
 
-    if not transactions:
-        print("Нет данных для обработки!")
-    else:
-        # Примеры поиска (регистронезависимо):
         coffee_transactions = process_bank_search(transactions, r"Перевод")
-        print(coffee_transactions)  # Для проверки выводим результат
+        print(coffee_transactions)
+    except FileNotFoundError:
+        print("Файл с данными не найден!")
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+
+if __name__ == "__main__":
+    main()
