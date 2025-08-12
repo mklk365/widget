@@ -58,26 +58,31 @@ def mine():
         input_filter_word = input().lower()
 
     # Возвращаем полученные значения
-    return {
+    result = {
         "file_type": input_type_file,
         "status": input_status,
         "sort_by_date": input_sort_by_date,
-        "sort_by_date_up": input_sort_by_date_up,
         "rub_only": input_rub_only,
         "filter_by_word": input_filter_by_word,
-        "filter_word": input_filter_word,
     }
+    # Возвращаем полученные значения, если есть фильтрация по слову в описании
+    if input_sort_by_date:
+        result["sort_by_date_up"] = input_sort_by_date_up
+    if input_filter_by_word:
+        result["filter_word"] = input_filter_word
+
+    return result
 
 
-def process_transactions(params):
+def process_transactions(params, file_path=None):
     """Функция для обработки транзакций согласно параметрам"""
     # Загружаем данные в зависимости от типа файла
     if params["file_type"] == "1":
-        transactions = load_json_data(json_file_path)
+        transactions = load_json_data(file_path or json_file_path)
     elif params["file_type"] == "2":
-        transactions = load_csv_data(csv_file_path)
+        transactions = load_csv_data(file_path or csv_file_path)
     elif params["file_type"] == "3":
-        transactions = load_xlsx_data(xlsx_file_path)
+        transactions = load_xlsx_data(file_path or xlsx_file_path)
     else:
         return []
 
@@ -107,13 +112,17 @@ def process_transactions(params):
 def format_transaction(transaction):
     """Форматирует транзакцию для красивого вывода с использованием масок"""
     # Форматируем дату
-    date_str = ""
+    date_str = "Дата неизвестна"
     if "date" in transaction:
         try:
-            date_obj = datetime.strptime(transaction["date"], "%Y-%m-%dT%H:%M:%S.%f")
+            # Пробуем разные форматы даты
+            try:
+                date_obj = datetime.strptime(transaction["date"], "%Y-%m-%dT%H:%M:%S.%f")
+            except ValueError:
+                date_obj = datetime.strptime(transaction["date"], "%Y-%m-%dT%H:%M:%S")
             date_str = date_obj.strftime("%d.%m.%Y")
         except (ValueError, TypeError):
-            date_str = "Дата неизвестна"
+            pass  # Оставляем "Дата неизвестна"
 
     description = transaction.get("description", "Без описания")
 
